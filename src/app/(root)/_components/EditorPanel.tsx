@@ -2,7 +2,8 @@
 import { useCodeEditorStore } from "@/store/useCodeEditorStore";
 import { useEffect, useState } from "react";
 import { defineMonacoThemes, LANGUAGE_CONFIG } from "../_constants";
-import { Editor } from "@monaco-editor/react";
+import { Editor as MonacoEditor, OnMount } from "@monaco-editor/react";
+import Monaco from "monaco-editor";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { RotateCcwIcon, ShareIcon, TypeIcon } from "lucide-react";
@@ -11,18 +12,30 @@ import { EditorPanelSkeleton } from "./EditorPanelSkeleton";
 import useMounted from "@/hooks/useMounted";
 import ShareSnippetDialog from "./ShareSnippetDialog";
 
+// Type definition for supported languages
+type SupportedLanguage = "javascript" | "python" | "typescript";
+
 function EditorPanel() {
   const clerk = useClerk();
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
-  const { language, theme, fontSize, editor, setFontSize, setEditor } =
-    useCodeEditorStore();
+  const {
+    language,
+    theme,
+    fontSize,
+    editor,
+    setLanguage,
+    setFontSize,
+    setEditor: setStoreEditor,
+  } = useCodeEditorStore();
 
   const mounted = useMounted();
 
   useEffect(() => {
     const savedCode = localStorage.getItem(`editor-code-${language}`);
     const newCode = savedCode || LANGUAGE_CONFIG[language].defaultCode;
-    if (editor) editor.setValue(newCode);
+    if (editor) {
+      editor.setValue(newCode);
+    }
   }, [language, editor]);
 
   useEffect(() => {
@@ -32,8 +45,10 @@ function EditorPanel() {
 
   const handleRefresh = () => {
     const defaultCode = LANGUAGE_CONFIG[language].defaultCode;
-    if (editor) editor.setValue(defaultCode);
-    localStorage.removeItem(`editor-code-${language}`);
+    if (editor) {
+      editor.setValue(defaultCode);
+      localStorage.removeItem(`editor-code-${language}`);
+    }
   };
 
   const handleEditorChange = (value: string | undefined) => {
@@ -46,6 +61,18 @@ function EditorPanel() {
     localStorage.setItem("editor-font-size", size.toString());
   };
 
+  const handleEditorMount: OnMount = (
+    editorInstance: Monaco.editor.IStandaloneCodeEditor,
+    monacoInstance: typeof Monaco
+  ) => {
+    setStoreEditor(editorInstance);
+    defineMonacoThemes(monacoInstance.editor);
+  };
+
+  const handleLanguageChange = (newLanguage: SupportedLanguage) => {
+    setLanguage(newLanguage);
+  };
+
   if (!mounted) return null;
 
   return (
@@ -56,17 +83,31 @@ function EditorPanel() {
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#1e1e2e] ring-1 ring-white/5">
               <Image
-                src={"/" + language + ".png"}
-                alt="Logo"
+                src={LANGUAGE_CONFIG[language].logo}
+                alt={`${language} Logo`}
                 width={24}
                 height={24}
               />
             </div>
             <div>
               <h2 className="text-sm font-medium text-white">Code Editor</h2>
-              <p className="text-xs text-gray-500">
-                Write and execute your code
-              </p>
+              <div className="flex items-center gap-2">
+                {(["javascript", "python", "typescript"] as const).map(
+                  (lang) => (
+                    <button
+                      key={lang}
+                      onClick={() => handleLanguageChange(lang)}
+                      className={`text-xs px-2 py-1 rounded-md transition-colors ${
+                        language === lang
+                          ? "bg-blue-500 text-white"
+                          : "text-gray-400 hover:bg-white/10"
+                      }`}
+                    >
+                      {lang}
+                    </button>
+                  )
+                )}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -117,13 +158,13 @@ function EditorPanel() {
         {/* Editor  */}
         <div className="relative group rounded-xl overflow-hidden ring-1 ring-white/[0.05]">
           {clerk.loaded && (
-            <Editor
+            <MonacoEditor
               height="600px"
               language={LANGUAGE_CONFIG[language].monacoLanguage}
               onChange={handleEditorChange}
               theme={theme}
-              beforeMount={defineMonacoThemes}
-              onMount={(editor) => setEditor(editor)}
+              defaultValue={LANGUAGE_CONFIG[language].defaultCode}
+              onMount={handleEditorMount}
               options={{
                 minimap: { enabled: false },
                 fontSize,
@@ -157,7 +198,5 @@ function EditorPanel() {
     </div>
   );
 }
-
-console.log(EditorPanel);
 
 export default EditorPanel;
