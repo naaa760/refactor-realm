@@ -16,3 +16,5 @@ export default function Home() {
     </div>
   );
 }
+
+console.log(EditorPanel, Header, OutputPanel);
