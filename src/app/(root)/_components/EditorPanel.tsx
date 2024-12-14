@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 "use client";
 import { useCodeEditorStore } from "@/store/useCodeEditorStore";
 import { useEffect, useState } from "react";
@@ -34,6 +35,8 @@ function EditorPanel() {
     const savedCode = localStorage.getItem(`editor-code-${language}`);
     const newCode = savedCode || LANGUAGE_CONFIG[language].defaultCode;
     if (editor) {
+      //@ts-ignore
+
       editor.setValue(newCode);
     }
   }, [language, editor]);
@@ -46,6 +49,7 @@ function EditorPanel() {
   const handleRefresh = () => {
     const defaultCode = LANGUAGE_CONFIG[language].defaultCode;
     if (editor) {
+      //@ts-ignore
       editor.setValue(defaultCode);
       localStorage.removeItem(`editor-code-${language}`);
     }
@@ -65,6 +69,7 @@ function EditorPanel() {
     editorInstance: Monaco.editor.IStandaloneCodeEditor,
     monacoInstance: typeof Monaco
   ) => {
+    //@ts-ignore
     setStoreEditor(editorInstance);
     defineMonacoThemes(monacoInstance.editor);
   };
