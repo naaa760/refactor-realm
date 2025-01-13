@@ -15,6 +15,7 @@ import { Id } from "../../../../convex/_generated/dataModel";
 
 import { UserResource } from "@clerk/types";
 import Image from "next/image";
+
 interface ProfileHeaderProps {
   userStats: {
     totalExecutions: number;
