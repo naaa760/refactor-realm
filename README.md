@@ -8,10 +8,12 @@ This project is a Next.js application designed to provide resources, tools, and 
 
 ## Features
 
-- Modern, responsive design
-- Developer-focused resources
-- Support section
-- Clear privacy and terms documentation
+- Real-time code editing with Monaco Editor
+- Multi-language support
+- Three beautiful dark themes (GitHub Dark, Monokai, Solarized Dark)
+- Live code execution
+- Responsive design for all devices
+- Type-safe configurations
 
 ## Technology Stack
 
